@@ -285,6 +285,131 @@ mvn test -Dtest=BanktradeApplicationTests
    - Integration guides
    - Deployment guides
 
+## Docker Deployment
+
+### Prerequisites
+
+- Docker Engine 24.0+
+- Docker Compose 2.20+
+
+### Building and Running with Docker
+
+1. **Using Docker Compose (Recommended)**
+
+```bash
+# Build and start the container
+docker-compose up -d
+
+# Check container status
+docker-compose ps
+
+# View container logs
+docker-compose logs -f
+
+# Stop the container
+docker-compose down
+```
+
+2. **Using Docker Commands**
+
+```bash
+# Build the image
+docker build -t banktrade:latest .
+
+# Run the container
+docker run -d \
+  --name banktrade \
+  -p 8080:8080 \
+  -e JAVA_OPTS="-Xms512m -Xmx1024m" \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  banktrade:latest
+
+# View container logs
+docker logs -f banktrade
+
+# Stop the container
+docker stop banktrade
+
+# Remove the container
+docker rm banktrade
+```
+
+### Docker Configuration
+
+The project includes the following Docker-related files:
+
+1. **Dockerfile**
+   - Multi-stage build for optimized image size
+   - Build stage using Maven
+   - Runtime stage using JRE
+   - JVM and environment configuration
+
+2. **docker-compose.yml**
+   - Service definition
+   - Port mapping
+   - Environment variables
+   - Health check configuration
+   - Restart policy
+
+3. **.dockerignore**
+   - Excludes unnecessary files from build context
+   - Improves build performance
+   - Prevents sensitive data inclusion
+
+### Environment Variables
+
+The following environment variables can be configured:
+
+| Variable | Description | Default Value |
+|----------|-------------|---------------|
+| JAVA_OPTS | JVM options | -Xms512m -Xmx1024m |
+| SPRING_PROFILES_ACTIVE | Spring profile | prod |
+
+### Health Check
+
+The container includes a health check that:
+- Tests the application health endpoint
+- Runs every 30 seconds
+- Retries 3 times before marking unhealthy
+- Has a 10-second timeout
+- Waits 40 seconds before starting checks
+
+### Troubleshooting
+
+1. **Container Issues**
+```bash
+# Check container status
+docker ps -a
+
+# View container logs
+docker logs -f banktrade
+
+# Inspect container
+docker inspect banktrade
+```
+
+2. **Application Issues**
+```bash
+# Test health endpoint
+curl http://localhost:8080/api/actuator/health
+
+# Test application endpoint
+curl -X POST http://localhost:8080/api/transactions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Test Transaction",
+    "amount": 100.00,
+    "type": "INCOME",
+    "category": "Test Category"
+  }'
+```
+
+3. **Common Problems**
+   - Port conflicts: Change the port mapping in docker-compose.yml
+   - Memory issues: Adjust JAVA_OPTS in docker-compose.yml
+   - Build failures: Check Dockerfile and .dockerignore
+   - Network issues: Verify network settings in docker-compose.yml
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details. 
