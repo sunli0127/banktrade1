@@ -52,20 +52,14 @@ sequenceDiagram
 #### Deployment Architecture
 ```mermaid
 graph TB
-    subgraph "Docker Container"
+    subgraph "Application Container"
         App[Spring Boot App]
         JVM[JVM Runtime]
     end
     
-    subgraph "Host Machine"
-        Docker[Docker Engine]
-    end
-    
-    Client[External Clients] --> Docker
-    Docker --> App
+    Client[External Clients] --> App
     App --> JVM
     
-    style Docker fill:#f9f,stroke:#333,stroke-width:2px
     style App fill:#bbf,stroke:#333,stroke-width:2px
     style JVM fill:#bfb,stroke:#333,stroke-width:2px
 ```
