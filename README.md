@@ -4,6 +4,72 @@ A robust and scalable financial transaction management system built with Spring 
 
 ## System Architecture
 
+### Architecture Diagrams
+
+#### System Overview
+```mermaid
+graph TB
+    Client[Client Applications] --> API[REST API Layer]
+    API --> Service[Service Layer]
+    Service --> Domain[Domain Layer]
+    Service --> Storage[In-Memory Storage]
+    
+    subgraph "Core Components"
+        API[TransactionController]
+        Service[TransactionService]
+        Domain[Transaction Entity]
+        Storage[ConcurrentHashMap]
+    end
+    
+    subgraph "Cross-Cutting Concerns"
+        Validation[Input Validation]
+        Error[Error Handling]
+    end
+    
+    API --> Validation
+    API --> Error
+```
+
+#### Component Interaction
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Controller
+    participant Service
+    participant Domain
+    participant Storage
+    
+    Client->>Controller: HTTP Request
+    Controller->>Controller: Input Validation
+    Controller->>Service: Process Request
+    Service->>Domain: Business Logic
+    Service->>Storage: Data Operations
+    Storage-->>Service: Return Result
+    Service-->>Controller: Process Response
+    Controller-->>Client: HTTP Response
+```
+
+#### Deployment Architecture
+```mermaid
+graph TB
+    subgraph "Docker Container"
+        App[Spring Boot App]
+        JVM[JVM Runtime]
+    end
+    
+    subgraph "Host Machine"
+        Docker[Docker Engine]
+    end
+    
+    Client[External Clients] --> Docker
+    Docker --> App
+    App --> JVM
+    
+    style Docker fill:#f9f,stroke:#333,stroke-width:2px
+    style App fill:#bbf,stroke:#333,stroke-width:2px
+    style JVM fill:#bfb,stroke:#333,stroke-width:2px
+```
+
 ### Core Components
 
 1. **Domain Layer**
@@ -285,130 +351,45 @@ mvn test -Dtest=BanktradeApplicationTests
    - Integration guides
    - Deployment guides
 
-## Docker Deployment
+## 部署指南
 
-### Prerequisites
+### Docker 部署
 
-- Docker Engine 24.0+
-- Docker Compose 2.20+
-
-### Building and Running with Docker
-
-1. **Using Docker Compose (Recommended)**
-
+1. 构建 Docker 镜像：
 ```bash
-# Build and start the container
-docker-compose up -d
-
-# Check container status
-docker-compose ps
-
-# View container logs
-docker-compose logs -f
-
-# Stop the container
-docker-compose down
+docker build -t banktrade .
 ```
 
-2. **Using Docker Commands**
-
+2. 运行容器：
 ```bash
-# Build the image
-docker build -t banktrade:latest .
+docker run -d -p 8080:8080 --name banktrade banktrade
+```
 
-# Run the container
-docker run -d \
-  --name banktrade \
-  -p 8080:8080 \
-  -e JAVA_OPTS="-Xms512m -Xmx1024m" \
-  -e SPRING_PROFILES_ACTIVE=prod \
-  banktrade:latest
-
-# View container logs
+3. 查看容器日志：
+```bash
 docker logs -f banktrade
+```
 
-# Stop the container
+4. 停止容器：
+```bash
 docker stop banktrade
+```
 
-# Remove the container
+5. 删除容器：
+```bash
 docker rm banktrade
 ```
 
-### Docker Configuration
+### 环境变量配置
 
-The project includes the following Docker-related files:
+可以通过以下方式配置环境变量：
 
-1. **Dockerfile**
-   - Multi-stage build for optimized image size
-   - Build stage using Maven
-   - Runtime stage using JRE
-   - JVM and environment configuration
-
-2. **docker-compose.yml**
-   - Service definition
-   - Port mapping
-   - Environment variables
-   - Health check configuration
-   - Restart policy
-
-3. **.dockerignore**
-   - Excludes unnecessary files from build context
-   - Improves build performance
-   - Prevents sensitive data inclusion
-
-### Environment Variables
-
-The following environment variables can be configured:
-
-| Variable | Description | Default Value |
-|----------|-------------|---------------|
-| JAVA_OPTS | JVM options | -Xms512m -Xmx1024m |
-| SPRING_PROFILES_ACTIVE | Spring profile | prod |
-
-### Health Check
-
-The container includes a health check that:
-- Tests the application health endpoint
-- Runs every 30 seconds
-- Retries 3 times before marking unhealthy
-- Has a 10-second timeout
-- Waits 40 seconds before starting checks
-
-### Troubleshooting
-
-1. **Container Issues**
 ```bash
-# Check container status
-docker ps -a
-
-# View container logs
-docker logs -f banktrade
-
-# Inspect container
-docker inspect banktrade
+docker run -d -p 8080:8080 \
+  -e JAVA_OPTS="-Xms512m -Xmx1024m" \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  --name banktrade banktrade
 ```
-
-2. **Application Issues**
-```bash
-# Test health endpoint
-curl http://localhost:8080/api/actuator/health
-
-# Test application endpoint
-curl -X POST http://localhost:8080/api/transactions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "description": "Test Transaction",
-    "amount": 100.00,
-    "type": "INCOME",
-    "category": "Test Category"
-  }'
-```
-
-3. **Common Problems**
-   - Port conflicts: Change the port mapping in docker-compose.yml
-   - Memory issues: Adjust JAVA_OPTS in docker-compose.yml
-   - Build failures: Check Dockerfile and .dockerignore
-   - Network issues: Verify network settings in docker-compose.yml
 
 ## License
 
