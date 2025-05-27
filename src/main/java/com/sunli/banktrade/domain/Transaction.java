@@ -12,6 +12,8 @@ import com.sunli.banktrade.exception.ResourceNotFoundException;
 /**
  * 交易实体类，表示系统中的交易记录
  * 使用内存存储实现，支持并发操作
+ * 
+ *  我特意写了一个充血模型将模型的功能内聚在了模型内部，是因为充血模型与DDD更为适配。事实上，充血模型和贫血模型各有优劣，要根据实际情况选择
  *
  * @author sunli
  * @version 1.0
